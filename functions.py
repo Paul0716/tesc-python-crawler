@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import csv 
 import requests
+import os
 from pyquery import PyQuery as pq
 
 def get_stock_list(filename):
@@ -13,6 +14,8 @@ def get_stock_list(filename):
 def get_single_page(stock_id, year, month):
 
 	path = 'data/%s.csv'%stock_id
+
+	check_if_file_exists(path)
 
 	csv_data = read_single_file(path)
 
@@ -30,7 +33,7 @@ def get_single_page(stock_id, year, month):
 						cw.writerow(data)
 			f.close();
 		else:
-			print record_error_log("發生錯誤: status_code %s" % page.status_code)
+			print record_error_log("發生錯誤: status_code: %(code)s, year: %(year)s, month: %(month)s, url: %(url)s " %{ 'code': page.status_code, 'year': year, 'month': month, 'url': page.url.encode('utf-8') })
 
 # 錯誤輸出檔案
 def record_error_log(msg):
@@ -59,4 +62,18 @@ def overwrite_csv_line(*args, **kwargs):
 		writer = csv.writer(b)
 		print kwargs["data"]
 		writer.writerow(kwargs["data"])
+
+def date_add_a_month(obj): 
+	if obj.month < 12:
+		mon = obj.month + 1
+		return obj.replace(month=mon)
+	else:
+		year = obj.year +1
+		mon = 1
+		return obj.replace(year=year,month=mon)
+
+def check_if_file_exists(filename):
+	if not os.path.isfile(filename):
+		open(filename, 'a').close()
+		print "create file %s" % filename
 
